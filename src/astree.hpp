@@ -6,9 +6,9 @@
 #include <type_traits>
 #include <algorithm> //std::next
 
-//#define DEBUGAST(msg)
-#include <iostream>
-#define DEBUGAST(msg) std::cout <<__LINE__ <<"\t[" <<__func__ <<"]\t" <<msg <<std::endl;
+#define DEBUGAST(msg)
+//#include <iostream>
+//#define DEBUGAST(msg) std::cout <<__LINE__ <<"\t[" <<__func__ <<"]\t" <<msg <<std::endl;
 
 namespace ASTree {
 
