@@ -8,7 +8,7 @@ This realization based on smart pointers (std::shared_ptr), so you don't need to
 
 Try it and you will see, this is convenient!
 
-# Little Example
+# Little Example (full in ./example/main.cpp)
 ```cpp
     #include "astree.hpp"
     
