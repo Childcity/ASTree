@@ -3,25 +3,29 @@
 //
 
 #include "../src/astree.hpp"
-
 #include <iostream>
 
 int main()
 {
     enum ASTNodeType{
-        Default, Add, Mult, Power, Cycle
+        Default, Head, Add, Mult, Power, Number
     };
 
     using ASTNode = ASTree::ASTNode<ASTNodeType>;
 
 
 
-    
-    auto syntaxTree = ASTNode::GetNewInstance(ASTNodeType::Add, "ADD_NODE");
 
-    syntaxTree->addChild(ASTNode::GetNewInstance(ASTNodeType::Mult, "POWER_NODE"));
+    auto syntaxTree = ASTNode::GetNewInstance(ASTNodeType::Head, "HEAD_NODE");
 
-    auto mult = ASTNode::GetNewInstance(ASTNodeType::Mult, "MULT_NODE");
+    const auto leftOp = ASTNode::GetNewInstance(ASTNodeType::Number, "2");
+    const auto rightOp = ASTNode::GetNewInstance(ASTNodeType::Number, "5");
+
+    syntaxTree->addChild(ASTNode::GetNewInstance(ASTNodeType::Power, "POWER_NODE", leftOp, rightOp));
+
+    auto mult = ASTNode::GetNewInstance(ASTNodeType::Mult, "MULT_NODE"
+                                                           , ASTNode::GetNewInstance(ASTNodeType::Number, "7")
+                                                            , ASTNode::GetNewInstance(ASTNodeType::Number, "8") );
     syntaxTree->addChild(mult);
     syntaxTree->addChild(mult); // при повторном добавлении одного и того же узла узел сначала
                                 // удалиться, а затем снова добавиться к syntaxTree
