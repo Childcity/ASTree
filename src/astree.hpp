@@ -66,13 +66,10 @@ public:
 
     static SharedPtr GetNewInstance(NodeType type, std::string text, const SharedPtr &child1, const SharedPtr &child2){
         const SharedPtr instance(std::make_shared<MakeSharedEnabler<NodeType>>(std::move(type), std::move(text)));
-        DEBUGAST("creating instance")
         if(child1){
-            DEBUGAST("child ok 1")
             instance->addChild(child1);
         }
         if(child2){
-            DEBUGAST("child ok 2")
             instance->addChild(child2);
         }
         return instance;
