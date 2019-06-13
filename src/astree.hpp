@@ -95,6 +95,7 @@ public:
         return GetNewInstance(std::move(type), std::to_string(type));
     }
 
+    // Добавить дочерний узел к текущему узлу
     void addChild(const SharedPtr child){
         DEBUGAST("adding child: " <<child->toString() <<" to root: " <<toString())
 
@@ -113,6 +114,7 @@ public:
         childs_.emplace_back(std::move(child));
     }
 
+    // Удалить дочерний узел из текущего узла (child - узел, который должен быть удален)
     void removeChild(const SharedPtr &child){
         childs_.remove(child);
 
@@ -122,28 +124,34 @@ public:
         }
     }
 
+    // Получить к-во дочерних узлов у текущего узла
     size_t getChildsCount() const { return childs_.size(); }
 
+    // Проверить, установлен ли отцовский узел
     bool isParentValid () const {
         //return (! parent_.owner_before(WeakPtr{})) && (! WeakPtr{}.owner_before(parent_));
         return parent_.lock() != nullptr;
     }
 
+    // Получить WeakPtr на отцовский узел
     WeakPtr getParent() { return parent_; }
 
-    // сделать отцом parent
+    // Сделать отцом текущего узла "parent" узел
     void setParent( const WeakPtr &parent) { parent_ = parent; }
 
-    // сделаться отцом у val
+    // Сделаться отцовским узлом у узла val
     void setAsParent(const SharedPtr &val) {
         auto self = this->shared_from_this();
         val->addChild(self);
     }
 
+    // Полусить дочерний узел по его индексу
     SharedPtr getChild(long index) const {
         return *(std::next(childs_.begin(), index));
     }
 
+    // Получить индекс дочернего узла по самому узлу.
+    // Возвращается пара, где левое значение -- нашелся ли такой узел среди дочерних, правое -- индекс, если нашелся
     std::pair<bool, long> getChildIndex(const SharedPtr &child) const {
         // Find given element in list
         const auto &it = std::find(childs_.begin(), childs_.end(), child);
@@ -155,6 +163,8 @@ public:
         return std::pair(true, std::distance(childs_.begin(), it));
     }
 
+    // Получить индекс этого узла у его родительского узла, если тот устаовлен.
+    // Возвращается пара, где левое значение -- нашелся ли такой узел среди дочерних у родительского, правое -- индекс, если нашелся
     std::pair<bool, long> getChildIndexInParent() {
         if(! isParentValid()){
             return std::pair(false, -1);
@@ -164,14 +174,19 @@ public:
         return parent_.lock()->getChildIndex(self);
     }
 
+    // Получить все дочернии узлы текущего
     std::list<SharedPtr> getChilds() const { return childs_; }
 
+    // Получить уникальное имя узла
     std::string getUniqueName() const { return uniqName_; }
 
+    // Получить тип узла
     NodeType getType() const { return type_; }
 
+    // Получить присвоеный узлу текст
     std::string getText() const { return text_; }
 
+    // Вывести информацию о текущем узле
     std::string toString() const { return text_ + " (type: " + std::to_string(type_) + ")"; }
 
 private:
