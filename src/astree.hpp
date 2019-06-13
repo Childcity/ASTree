@@ -1,10 +1,11 @@
 #ifndef ASTREE_H
 #define ASTREE_H
 
+#include <algorithm> //std::next
+#include <sstream> //std::stringstream
 #include <memory>
 #include <list>
 #include <type_traits>
-#include <algorithm> //std::next
 
 #define DEBUGAST(msg)
 //#include <iostream>
@@ -57,7 +58,7 @@ public:
 
     ASTNode(const ASTNode &) = delete;
 
-    ASTNode(ASTNode &&rVal) noexcept = delete;
+    ASTNode(ASTNode &&rVal) noexcept = default;
 
     ~ASTNode(){
         DEBUGAST(std::string("~ASTNode(): '") <<toString())
@@ -94,7 +95,7 @@ public:
     }
 
     static SharedPtr GetNewInstance(NodeType type){
-        return GetNewInstance(std::move(type), std::to_string(static_cast<int>(type)));
+        return GetNewInstance(std::move(type), std::to_string(type));
     }
 
     void addChild(const SharedPtr child){
@@ -194,58 +195,50 @@ private:
      std::list<SharedPtr> childs_;
 };
 
-//class ASTNodeWalker{
-//public:
-//
-//    static void ShowASTTree(const ASTNode::SharedPtr &root, QGraphicsScene &scene,  QGraphicsView &view){
-//
-//        QByteArray ASTTreeSource;
-//        QTextStream stream(&ASTTreeSource, QIODevice::ReadWrite);
-//        stream << "graph {" << endl;
-//        stream << "\tnode[fontsize=10,margin=0,width=\".4\", height=\".3\"];" << endl;
-//        stream << "\tsubgraph cluster17{" << endl;
-//
-//        GetStringSubTree(root, stream);
-//
-//        stream << "\t}\n}" << endl;
-//        stream.flush();
-//
-//        QProcess* p = new QProcess();
-//
-//        p->setProcessChannelMode(QProcess::MergedChannels);
-//        p->start("dot", std::stringList() << "-Tpng");
-//        p->write(ASTTreeSource);
-//
-//        QByteArray data;
-//        QPixmap pixmap = QPixmap();
-//
-//        while(p->waitForReadyRead(200)){
-//            data.append(p->readAll());
-//        }
-//
-//        pixmap.loadFromData(data);
-//
-//        scene.addPixmap(pixmap);
-//        view.show();
-//    }
-//
-//private:
-//    static void GetStringSubTree(const ASTNode::SharedPtr &node, QTextStream &stream){
-//
-//        if(! node->getParent().lock()){
-//            stream << "\t\tn" << node->getUniqueName() << "[label=\"" << node->getText() <<"\"];" << endl;
-//
-//        }else {
-//            stream << "\t\tn" << node->getUniqueName() << "[label=\"" << node->getText() <<"\"];" << endl;
-//            stream << "\t\tn" <<node->getParent().lock()->getUniqueName() << "--" <<"n" <<node->getUniqueName() << ";" << endl;
-//        }
-//
-//        for (int i = 0; i < node->getChildsCount(); i++) {
-//            GetStringSubTree(node->getChild(i), stream);
-//        }
-//    }
-//
-//};
+template <typename NodeType, typename = typename std::enable_if< std::is_enum<NodeType>::value >::type>
+class ASTNodeWalker{
+public:
+    explicit ASTNodeWalker(std::shared_ptr<ASTNode<NodeType>> head) noexcept
+        : head_(std::move(head))
+    {}
+
+    // сгенерирует файл для утилиты Graphviz (https://www.graphviz.org/)
+    // которая сможет отобразить дерево
+    void buildDotFormat(){
+        std::stringstream stream;
+        stream << "graph {" << std::endl;
+        stream << "\tnode[fontsize=10,margin=0,width=\".4\", height=\".3\"];" << std::endl;
+        stream << "\tsubgraph cluster17{" << std::endl;
+
+        ASTNodeWalker::GetStringSubTree(head_, stream);
+
+        stream << "\t}\n}" << std::endl;
+        dotFormat_ = stream.str();
+    }
+
+    std::string getDotFormat() const {
+        return dotFormat_;
+    }
+
+private:
+    static void GetStringSubTree(const std::shared_ptr<ASTNode<NodeType>> &node, std::stringstream &stream){
+
+        if(! node->getParent().lock()){
+            stream << "\t\tn" << node->getUniqueName() << "[label=\"" << node->getText() <<"\"];" << std::endl;
+        }else {
+            stream << "\t\tn" << node->getUniqueName() << "[label=\"" << node->getText() <<"\"];" << std::endl;
+            stream << "\t\tn" <<node->getParent().lock()->getUniqueName() << "--n" <<node->getUniqueName() << ";" << std::endl;
+        }
+
+        for (int i = 0; i < node->getChildsCount(); i++) {
+            GetStringSubTree(node->getChild(i), stream);
+        }
+    }
+
+private:
+    const std::shared_ptr<ASTNode<NodeType>> head_;
+    std::string dotFormat_;
+};
 
 
 }
