@@ -4,6 +4,7 @@
 
 #include "../src/astree.hpp"
 #include <iostream>
+#include <fstream>
 
 int main()
 {
@@ -51,6 +52,22 @@ int main()
     }else{
         std::cout <<"Not found: " <<foundChildResult.second <<std::endl;
     }
+
+
+
+    //////////////////////////////////  Отображение ASTree на png изображении  /////////////////////
+
+    using ASTNodeWalker = ASTree::ASTNodeWalker<ASTNodeType>;
+    ASTNodeWalker walker(syntaxTree);
+    walker.buildDotFormat();
+
+    std::cout <<walker.getDotFormat() <<std::endl;
+
+    // запишем в файл dot_format.txt дерево в формате dot
+    std::ofstream{"dot_format.txt", std::ios::trunc | std::ios::out} << walker.getDotFormat();
+
+    // скормим сгенерированый файл утилите dot, которая сгенерирует png изображение
+    system("dot -O -Tpng dot_format.txt");
 
     return 0;
 }
